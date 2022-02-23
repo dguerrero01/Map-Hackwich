@@ -20,13 +20,30 @@ struct ContentView: View {
             interactionModes: .all,
             showsUserLocation: true,
             userTrackingMode: $userTrackingMode,
-            annotationItems: places) { place in
+            annotationItems: places)
+        { place in
             MapAnnotation(coordinate: place.coordinate,
                           anchorPoint: CGPoint(x: 0.5, y: 1.2)) {
                 Marker(name: place.name)
             }
         }
-        
+        .onAppear {
+            findLocation(name: "Springfield")
+        }
+    }
+    
+    func findLocation(name: String) {
+        locationManager.geocoder.geocodeAddressString(name) { (placemarks, error) in
+            guard placemarks != nil else {
+                print("Could not locate \(name)")
+                return
+            }
+            for placemark in placemarks! {
+                let place = Place(name: "\(placemark.name!), \(placemark.administrativeArea!)",
+                                  coordinate: placemark.location!.coordinate)
+                places.append(place)
+            }
+        }
     }
 }
 
